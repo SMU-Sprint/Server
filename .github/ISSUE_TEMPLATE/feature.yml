@@ -1,0 +1,29 @@
+name: Feature Template
+description: 기능 추가 템플릿
+title: "✨ [Feat]: "
+labels: ["✨ feature"]
+
+body:
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: "✅ 기능 종류"
+      description: "추가할 기능의 종류를 선택하세요."
+      options:
+        - "회원/인증"
+        - "운동"
+    validations:
+      required: true
+
+  - type: textarea
+    id: feature-detail
+    attributes:
+      label: "👀 자세한 내용 (Optional)"
+      description: "작업할 기능에 대한 자세한 설명을 적어주세요."
+      placeholder: |
+        ex)
+        - 현재 위치 기반 주변 공공 체육시설 반환
+        - 사용자의 현재 위치를 클라이언트로부터 전달받아 사용
+        - radius 값은 서버 내의 환경변수로 설정된 값을 사용
+    validations:
+      required: false
