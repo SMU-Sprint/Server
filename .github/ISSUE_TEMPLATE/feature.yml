@@ -12,6 +12,7 @@ body:
       options:
         - "회원/인증"
         - "운동"
+        - "기타"
     validations:
       required: true
 
