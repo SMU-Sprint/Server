@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +16,7 @@ import smu.sprint.domain.member.dto.MemberSignUpRequest;
 import smu.sprint.domain.member.dto.MemberSignUpResponse;
 import smu.sprint.domain.member.service.MemberService;
 import smu.sprint.global.response.CustomResponse;
+import smu.sprint.global.security.auth.CustomUserDetails;
 
 @Tag(name = "Member", description = "회원 관련 API")
 @RestController
@@ -35,6 +38,22 @@ public class MemberController {
     @PostMapping
     public CustomResponse<MemberSignUpResponse> signUp(@Valid @RequestBody MemberSignUpRequest request) {
         return CustomResponse.onSuccess(memberService.signUp(request));
+    }
+
+    @Operation(
+            summary = "회원 탈퇴",
+            description = "로그인된 상태(유효한 AccessToken)에서만 호출 가능합니다. Soft delete로 처리되며, " +
+                    "탈퇴한 이메일로도 다시 회원가입할 수 있습니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "탈퇴 성공"),
+            @ApiResponse(responseCode = "401", description = "AccessToken이 없거나 유효하지 않음/만료됨"),
+            @ApiResponse(responseCode = "404", description = "AccessToken에 해당하는 회원을 찾을 수 없음")
+    })
+    @DeleteMapping("/me")
+    public CustomResponse<Void> withdraw(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        memberService.withdraw(customUserDetails);
+        return CustomResponse.onSuccess(null);
     }
 
 }

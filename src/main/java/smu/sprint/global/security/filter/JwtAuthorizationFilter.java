@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.filter.OncePerRequestFilter;
 import smu.sprint.global.code.AuthErrorCode;
 import smu.sprint.global.code.BaseErrorCode;
@@ -61,6 +62,11 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             writeErrorResponse(response, AuthErrorCode.ACCESS_TOKEN_EXPIRED);
         } catch (SignatureException e) {
             log.warn("[ JwtAuthorizationFilter ]: 유효하지 않은 토큰입니다. {}", e.getMessage());
+            SecurityContextHolder.clearContext();
+            writeErrorResponse(response, AuthErrorCode.INVALID_TOKEN);
+        } catch (UsernameNotFoundException e) {
+            // 토큰은 서명/타입 모두 유효하지만, 그 사이 탈퇴 등으로 계정이 사라진 경우
+            log.warn("[ JwtAuthorizationFilter ]: 토큰에 해당하는 계정을 찾을 수 없습니다. {}", e.getMessage());
             SecurityContextHolder.clearContext();
             writeErrorResponse(response, AuthErrorCode.INVALID_TOKEN);
         }

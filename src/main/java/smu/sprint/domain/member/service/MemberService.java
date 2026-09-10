@@ -14,12 +14,14 @@ import smu.sprint.global.security.auth.CustomUserDetails;
 import smu.sprint.global.security.auth.Roles;
 import smu.sprint.global.security.jwt.JwtDTO;
 import smu.sprint.global.security.jwt.JwtUtil;
+import smu.sprint.global.security.jwt.TokenRepository;
 
 @Service
 @RequiredArgsConstructor
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final TokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
@@ -45,6 +47,15 @@ public class MemberService {
         );
 
         return new MemberSignUpResponse(member.getEmail(), token);
+    }
+
+    @Transactional
+    public void withdraw(CustomUserDetails customUserDetails) {
+        Member member = memberRepository.findByEmail(customUserDetails.getUsername())
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+        // email을 변형하기 전에 먼저 조회/삭제해야 원래 email로 저장된 Token을 정확히 찾을 수 있다.
+        tokenRepository.findByMember(member).ifPresent(tokenRepository::delete);
+        member.withdraw();
     }
 
 }
