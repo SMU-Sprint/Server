@@ -137,6 +137,14 @@ public class JwtUtil {
         );
     }
 
+    public void invalidateRefreshToken(CustomUserDetails customUserDetails) {
+        Member member = memberRepository.findByEmail(customUserDetails.getUsername())
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+        // 이미 로그아웃되어 저장된 토큰이 없어도 에러로 취급하지 않고 그대로 종료 (멱등성)
+        tokenRepository.findByMember(member).ifPresent(tokenRepository::delete);
+        log.info("[ JwtUtil ]: RefreshToken을 폐기합니다.");
+    }
+
     public String resolveAccessToken(HttpServletRequest request) {
         log.info("[ JwtUtil ]: 헤더에서 토큰을 추출합니다.");
         String tokenFromHeader = request.getHeader("Authorization");

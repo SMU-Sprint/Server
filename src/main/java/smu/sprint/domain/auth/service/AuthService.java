@@ -53,4 +53,8 @@ public class AuthService {
         }
     }
 
+    public void logout(CustomUserDetails customUserDetails) {
+        jwtUtil.invalidateRefreshToken(customUserDetails);
+    }
+
 }

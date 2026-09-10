@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import smu.sprint.domain.auth.dto.LoginResponse;
 import smu.sprint.domain.auth.dto.ReissueRequest;
 import smu.sprint.domain.auth.service.AuthService;
 import smu.sprint.global.response.CustomResponse;
+import smu.sprint.global.security.auth.CustomUserDetails;
 import smu.sprint.global.security.jwt.JwtDTO;
 
 @Tag(name = "Auth", description = "인증 관련 API")
@@ -53,6 +55,22 @@ public class AuthController {
     @PostMapping("/reissue")
     public CustomResponse<JwtDTO> reissue(@Valid @RequestBody ReissueRequest request) {
         return CustomResponse.onSuccess(authService.reissue(request));
+    }
+
+    @Operation(
+            summary = "로그아웃",
+            description = "로그인된 상태(유효한 AccessToken)에서만 호출 가능합니다. " +
+                    "서버에 저장된 RefreshToken을 폐기합니다. AccessToken은 클라이언트가 즉시 폐기해야 합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+            @ApiResponse(responseCode = "401", description = "AccessToken이 없거나 유효하지 않음/만료됨"),
+            @ApiResponse(responseCode = "404", description = "AccessToken에 해당하는 회원을 찾을 수 없음")
+    })
+    @PostMapping("/logout")
+    public CustomResponse<Void> logout(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        authService.logout(customUserDetails);
+        return CustomResponse.onSuccess(null);
     }
 
 }

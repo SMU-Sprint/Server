@@ -33,6 +33,7 @@ public class SecurityConfig {
             "/api/v1/members", // 회원가입
             "/api/v1/auth/login", // 로그인
             "/api/v1/auth/reissue" // 토큰 재발급
+            // 로그아웃은 로그인된 상태(AccessToken 보유)에서만 호출 가능해야 하므로 permitAll에 포함하지 않음
     };
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
