@@ -16,3 +16,20 @@ spring:
         format_sql: true
     show-sql: false
     defer-datasource-initialization: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL}
+    password: ${EMAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+jwt:
+  secret: ${JWT_SECRET}
+  token:
+    access-expiration-time: ${ACCESS_EXPIRATION_TIME}
+    refresh-expiration-time: ${REFRESH_EXPIRATION_TIME}
