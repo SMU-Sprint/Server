@@ -28,11 +28,14 @@ public class MemberController {
 
     @Operation(
             summary = "회원가입",
-            description = "이메일/비밀번호로 회원가입을 진행합니다. 성공 시 즉시 로그인 처리되어 AccessToken/RefreshToken이 함께 발급됩니다."
+            description = "이메일/비밀번호/인증 코드로 회원가입을 진행합니다. " +
+                    "사전에 /api/v1/mail/verification으로 발급받은 인증 코드가 필요합니다. " +
+                    "성공 시 즉시 로그인 처리되어 AccessToken/RefreshToken이 함께 발급됩니다."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "회원가입 성공"),
-            @ApiResponse(responseCode = "400", description = "요청 값 검증 실패 (이메일 형식, 비밀번호 규칙 등)"),
+            @ApiResponse(responseCode = "400", description = "요청 값 검증 실패 / 인증 코드가 만료됨 / 인증 코드 불일치"),
+            @ApiResponse(responseCode = "404", description = "발급된 인증 코드가 없음"),
             @ApiResponse(responseCode = "409", description = "이미 가입된 이메일")
     })
     @PostMapping

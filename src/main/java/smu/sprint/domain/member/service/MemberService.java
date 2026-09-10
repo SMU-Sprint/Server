@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import smu.sprint.domain.mail.service.EmailVerificationService;
 import smu.sprint.domain.member.dto.MemberSignUpRequest;
 import smu.sprint.domain.member.dto.MemberSignUpResponse;
 import smu.sprint.domain.member.entity.Member;
@@ -24,12 +25,14 @@ public class MemberService {
     private final TokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final EmailVerificationService emailVerificationService;
 
     @Transactional
     public MemberSignUpResponse signUp(MemberSignUpRequest request) {
         if (memberRepository.findByEmail(request.email()).isPresent()) {
             throw new MemberException(MemberErrorCode.DUPLICATE_MEMBER);
         }
+        emailVerificationService.verifyCode(request.email(), request.code());
 
         Member member = Member.builder()
                 .email(request.email())
