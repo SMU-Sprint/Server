@@ -42,4 +42,8 @@ public class Member extends BaseEntity {
         this.email = this.email + "_DELETED_" + this.member_id;
     }
 
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
+
 }

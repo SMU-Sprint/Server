@@ -8,12 +8,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import smu.sprint.domain.member.dto.MemberSignUpRequest;
 import smu.sprint.domain.member.dto.MemberSignUpResponse;
+import smu.sprint.domain.member.dto.PasswordChangeRequest;
 import smu.sprint.domain.member.service.MemberService;
 import smu.sprint.global.response.CustomResponse;
 import smu.sprint.global.security.auth.CustomUserDetails;
@@ -41,6 +43,26 @@ public class MemberController {
     @PostMapping
     public CustomResponse<MemberSignUpResponse> signUp(@Valid @RequestBody MemberSignUpRequest request) {
         return CustomResponse.onSuccess(memberService.signUp(request));
+    }
+
+    @Operation(
+            summary = "비밀번호 변경",
+            description = "로그인된 상태(유효한 AccessToken)에서만 호출 가능합니다. " +
+                    "사전에 /api/v1/mail/verification/password-change로 발급받은 인증 코드가 필요합니다. " +
+                    "변경 후에도 로그인 상태는 유지됩니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
+            @ApiResponse(responseCode = "400", description = "요청 값 검증 실패 / 새 비밀번호 확인 불일치 / " +
+                    "인증 코드 만료 / 인증 코드 불일치 / 기존 비밀번호와 동일"),
+            @ApiResponse(responseCode = "401", description = "AccessToken이 없거나 유효하지 않음/만료됨"),
+            @ApiResponse(responseCode = "404", description = "발급된 인증 코드가 없음 / 회원을 찾을 수 없음")
+    })
+    @PatchMapping("/password")
+    public CustomResponse<Void> changePassword(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                                @Valid @RequestBody PasswordChangeRequest request) {
+        memberService.changePassword(customUserDetails, request);
+        return CustomResponse.onSuccess(null);
     }
 
     @Operation(

@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import smu.sprint.domain.mail.service.EmailVerificationService;
 import smu.sprint.domain.member.dto.MemberSignUpRequest;
 import smu.sprint.domain.member.dto.MemberSignUpResponse;
+import smu.sprint.domain.member.dto.PasswordChangeRequest;
 import smu.sprint.domain.member.entity.Member;
 import smu.sprint.domain.member.repository.MemberRepository;
 import smu.sprint.global.code.MemberErrorCode;
@@ -50,6 +51,26 @@ public class MemberService {
         );
 
         return new MemberSignUpResponse(member.getEmail(), token);
+    }
+
+    @Transactional
+    public void changePassword(CustomUserDetails customUserDetails, PasswordChangeRequest request) {
+        if (!request.newPassword().equals(request.newPasswordConfirm())) {
+            throw new MemberException(MemberErrorCode.PASSWORD_MISMATCH);
+        }
+
+        String email = customUserDetails.getUsername();
+        emailVerificationService.verifyCode(email, request.code());
+
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        if (passwordEncoder.matches(request.newPassword(), member.getPassword())) {
+            throw new MemberException(MemberErrorCode.PASSWORD_NOT_CHANGED);
+        }
+
+        member.changePassword(passwordEncoder.encode(request.newPassword()));
+        // 로그인 상태는 유지하므로 저장된 RefreshToken은 그대로 둔다.
     }
 
     @Transactional
