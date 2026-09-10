@@ -3,17 +3,18 @@ package smu.sprint.global.security.auth;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import smu.sprint.domain.entity.Member;
-import smu.sprint.domain.repository.MemberRepository;
+import smu.sprint.domain.member.entity.Member;
+import smu.sprint.domain.member.repository.MemberRepository;
 
 import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CustomUserDetailsService {
+public class CustomUserDetailsService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
 

@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import smu.sprint.domain.entity.Member;
+import smu.sprint.domain.member.entity.Member;
 import smu.sprint.global.entity.BaseEntity;
 
 @Entity

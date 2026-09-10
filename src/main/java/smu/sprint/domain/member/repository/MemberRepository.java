@@ -1,7 +1,7 @@
-package smu.sprint.domain.repository;
+package smu.sprint.domain.member.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import smu.sprint.domain.entity.Member;
+import smu.sprint.domain.member.entity.Member;
 
 import java.util.Optional;
 

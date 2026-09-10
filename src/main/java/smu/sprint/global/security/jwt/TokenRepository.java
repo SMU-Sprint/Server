@@ -2,7 +2,7 @@ package smu.sprint.global.security.jwt;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import smu.sprint.domain.entity.Member;
+import smu.sprint.domain.member.entity.Member;
 
 import java.util.Optional;
 

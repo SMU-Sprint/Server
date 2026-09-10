@@ -1,4 +1,4 @@
-package smu.sprint.domain.entity;
+package smu.sprint.domain.member.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
