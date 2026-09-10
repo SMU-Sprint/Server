@@ -129,11 +129,11 @@ public class JwtUtil {
                 null,
                 member.getRole()
         );
-        log.info("[ JwtUtil ]: AccessToken을 재발급합니다.");
-        // RefreshToken은 회전시키지 않고 그대로 재사용 (자체 만료 전까지 유효)
+        log.info("[ JwtUtil ]: AccessToken과 RefreshToken을 재발급합니다.");
+        // 재발급 시 RefreshToken도 함께 회전시켜 만료 기한을 최신으로 갱신 (createJwtRefreshToken이 upsert이므로 안전)
         return new JwtDTO(
                 createJwtAccessToken(customUserDetails),
-                refreshToken
+                createJwtRefreshToken(customUserDetails)
         );
     }
 
