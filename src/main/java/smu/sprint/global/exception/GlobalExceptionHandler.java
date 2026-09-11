@@ -3,6 +3,7 @@ package smu.sprint.global.exception;
 import jakarta.validation.ConstraintViolationException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -70,6 +71,14 @@ public class GlobalExceptionHandler {
             HttpRequestMethodNotSupportedException ex) {
         log.warn("[ HttpRequestMethodNotSupportedException ]: '{}' 메서드는 지원하지 않습니다.", ex.getMethod());
         return buildErrorResponse(GeneralErrorCode.METHOD_NOT_ALLOWED_405);
+    }
+
+    // DB 제약조건(PK, unique 등) 위반 시 발생하는 예외 처리 -> 복합키 중복 저장 시도와 관련된 내용
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    protected ResponseEntity<@NonNull CustomResponse<Void>> handleDataIntegrityViolationException(
+            DataIntegrityViolationException ex) {
+        log.warn("[ DataIntegrityViolationException ]: {}", ex.getMessage());
+        return buildErrorResponse(GeneralErrorCode.CONFLICT_409);
     }
 
     // 애플리케이션에서 발생하는 커스텀 예외를 처리

@@ -13,6 +13,7 @@ public enum GeneralErrorCode implements BaseErrorCode {
     FORBIDDEN_403(HttpStatus.FORBIDDEN, "COMMON403", "접근이 금지되었습니다."),
     NOT_FOUND_404(HttpStatus.NOT_FOUND, "COMMON404", "요청한 자원을 찾을 수 없습니다."),
     METHOD_NOT_ALLOWED_405(HttpStatus.METHOD_NOT_ALLOWED, "COMMON405", "허용되지 않은 HTTP 메서드입니다."),
+    CONFLICT_409(HttpStatus.CONFLICT, "COMMON409", "이미 존재하는 데이터이거나 요청이 현재 상태와 중복되어 충돌합니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON500", "서버 내부 오류가 발생했습니다."),
 
     // 유효성 검사 실패 코드
