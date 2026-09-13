@@ -62,7 +62,8 @@ public class Member extends BaseEntity {
         this.password = encodedPassword;
     }
 
-    public void updateBodyInfo(Double height, Double weight, Integer age, Gender gender) {
+    public void updateInfo(String name, Double height, Double weight, Integer age, Gender gender) {
+        this.name = name;
         this.height = height;
         this.weight = weight;
         this.age = age;

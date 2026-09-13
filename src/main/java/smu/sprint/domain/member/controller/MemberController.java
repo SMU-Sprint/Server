@@ -8,11 +8,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import smu.sprint.domain.member.dto.MemberInfoResponse;
+import smu.sprint.domain.member.dto.MemberInfoUpdateRequest;
 import smu.sprint.domain.member.dto.MemberSignUpRequest;
 import smu.sprint.domain.member.dto.MemberSignUpResponse;
 import smu.sprint.domain.member.dto.PasswordChangeRequest;
@@ -63,6 +66,38 @@ public class MemberController {
                                                 @Valid @RequestBody PasswordChangeRequest request) {
         memberService.changePassword(customUserDetails, request);
         return CustomResponse.onSuccess(null);
+    }
+
+    @Operation(
+            summary = "회원 정보 조회",
+            description = "로그인된 상태(유효한 AccessToken)에서만 호출 가능합니다. 이메일, 이름, 신장, 몸무게, 나이, 성별을 조회합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "회원 정보 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "AccessToken이 없거나 유효하지 않음/만료됨"),
+            @ApiResponse(responseCode = "404", description = "AccessToken에 해당하는 회원을 찾을 수 없음")
+    })
+    @GetMapping("/me")
+    public CustomResponse<MemberInfoResponse> getMemberInfo(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return CustomResponse.onSuccess(memberService.getMemberInfo(customUserDetails));
+    }
+
+    @Operation(
+            summary = "회원 정보 변경",
+            description = "로그인된 상태(유효한 AccessToken)에서만 호출 가능합니다. " +
+                    "이름, 신장, 몸무게, 성별, 나이를 변경합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "회원 정보 변경 성공"),
+            @ApiResponse(responseCode = "400", description = "요청 값 검증 실패"),
+            @ApiResponse(responseCode = "401", description = "AccessToken이 없거나 유효하지 않음/만료됨"),
+            @ApiResponse(responseCode = "404", description = "AccessToken에 해당하는 회원을 찾을 수 없음")
+    })
+    @PatchMapping("/me")
+    public CustomResponse<MemberInfoResponse> updateMemberInfo(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @Valid @RequestBody MemberInfoUpdateRequest request) {
+        return CustomResponse.onSuccess(memberService.updateMemberInfo(customUserDetails, request));
     }
 
     @Operation(
