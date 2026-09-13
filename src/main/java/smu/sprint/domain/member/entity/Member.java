@@ -26,6 +26,9 @@ public class Member extends BaseEntity {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    @Column(name = "name")
+    private String name;
+
     @Column(name = "password")
     private String password;
 
@@ -36,6 +39,19 @@ public class Member extends BaseEntity {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(name = "height")
+    private Double height;
+
+    @Column(name = "weight")
+    private Double weight;
+
+    @Column(name = "age")
+    private Integer age;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender")
+    private Gender gender;
+
     // 탈퇴 후에도 email의 unique 제약은 유지되므로, 원래 이메일을 비워 재가입이 가능하도록 변형해서 보존한다.
     public void withdraw() {
         this.deletedAt = LocalDateTime.now();
@@ -44,6 +60,14 @@ public class Member extends BaseEntity {
 
     public void changePassword(String encodedPassword) {
         this.password = encodedPassword;
+    }
+
+    public void updateInfo(String name, Double height, Double weight, Integer age, Gender gender) {
+        this.name = name;
+        this.height = height;
+        this.weight = weight;
+        this.age = age;
+        this.gender = gender;
     }
 
 }

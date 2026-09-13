@@ -5,6 +5,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import smu.sprint.domain.mail.service.EmailVerificationService;
+import smu.sprint.domain.member.dto.MemberInfoResponse;
+import smu.sprint.domain.member.dto.MemberInfoUpdateRequest;
 import smu.sprint.domain.member.dto.MemberSignUpRequest;
 import smu.sprint.domain.member.dto.MemberSignUpResponse;
 import smu.sprint.domain.member.dto.PasswordChangeRequest;
@@ -71,6 +73,24 @@ public class MemberService {
 
         member.changePassword(passwordEncoder.encode(request.newPassword()));
         // 로그인 상태는 유지하므로 저장된 RefreshToken은 그대로 둔다.
+    }
+
+    @Transactional(readOnly = true)
+    public MemberInfoResponse getMemberInfo(CustomUserDetails customUserDetails) {
+        Member member = memberRepository.findByEmail(customUserDetails.getUsername())
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        return MemberInfoResponse.from(member);
+    }
+
+    @Transactional
+    public MemberInfoResponse updateMemberInfo(CustomUserDetails customUserDetails, MemberInfoUpdateRequest request) {
+        Member member = memberRepository.findByEmail(customUserDetails.getUsername())
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        member.updateInfo(request.name(), request.height(), request.weight(), request.age(), request.gender());
+
+        return MemberInfoResponse.from(member);
     }
 
     @Transactional
