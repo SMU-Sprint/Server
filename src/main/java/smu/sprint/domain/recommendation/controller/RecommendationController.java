@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,9 +42,26 @@ public class RecommendationController {
             @ApiResponse(responseCode = "500", description = "AI 응답 처리 중 오류"),
             @ApiResponse(responseCode = "502", description = "AI 추천 생성 호출 실패")
     })
-    @PostMapping("/recommend")
+    @PostMapping("/recommendation")
     public CustomResponse<RecommendationResponse> recommend(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         RecommendationResult result = recommendService.recommend(customUserDetails);
         return result.cached() ? CustomResponse.onSuccess(result.response(), CACHED_MESSAGE) : CustomResponse.onSuccess(result.response());
+    }
+
+    @Operation(
+            summary = "운동 추천 조회",
+            description = "로그인된 상태(유효한 AccessToken)에서만 호출 가능합니다. " +
+                    "회원이 가장 최근에 작성한 설문에 대해 이미 생성된 추천 결과를 조회합니다. " +
+                    "AI를 호출하지 않고 저장된 결과만 반환하며, 최신 설문에 대한 추천이 아직 없으면 404를 반환합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "추천 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "AccessToken이 없거나 유효하지 않음/만료됨"),
+            @ApiResponse(responseCode = "404", description = "작성된 설문이 없거나, 최신 설문에 대한 추천 결과가 아직 없음")
+    })
+    @GetMapping("/recommendation")
+    public CustomResponse<RecommendationResponse> getRecommendation(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        RecommendationResponse response = recommendService.getRecommendation(customUserDetails);
+        return CustomResponse.onSuccess(response);
     }
 }

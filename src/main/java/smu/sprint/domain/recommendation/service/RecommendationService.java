@@ -91,4 +91,22 @@ public class RecommendationService {
 
         return new RecommendationResult(RecommendationResponse.from(survey.getSurveyId(), saved), false);
     }
+
+    // 추천 결과 조회 : "가장 최근 추천"을 RecommendedExercise.createdAt으로 단순 조회하면
+    // 방금 설문에 대한 생성(POST)이 실패했을 때 예전 설문의 추천이 최신인 것처럼 잘못 반환될 수 있는 문제가 있음
+    // 그래서 반드시 "회원의 최신 설문 -> 그 설문 ID의 추천 존재 여부" 순서로 조회
+    public RecommendationResponse getRecommendation(CustomUserDetails customUserDetails) {
+        Member member = memberRepository.findByEmail(customUserDetails.getUsername())
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        Survey survey = surveyRepository.findTopByMemberIdOrderByCreatedAtDesc(member.getMember_id())
+                .orElseThrow(() -> new RecommendationException(RecommendationErrorCode.SURVEY_NOT_FOUND));
+
+        List<RecommendedExercise> existing = recommendedExerciseRepository.findByIdSurveyIdOrderByIdRankAsc(survey.getSurveyId());
+        if (existing.isEmpty()) {
+            throw new RecommendationException(RecommendationErrorCode.RECOMMENDATION_NOT_FOUND);
+        }
+
+        return RecommendationResponse.from(survey.getSurveyId(), existing);
+    }
 }
