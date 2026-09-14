@@ -33,3 +33,10 @@ jwt:
   token:
     access-expiration-time: ${ACCESS_EXPIRATION_TIME}
     refresh-expiration-time: ${REFRESH_EXPIRATION_TIME}
+
+gemini:
+  api-key: ${GEMINI_API_KEY}
+  model: ${GEMINI_MODEL}
+  base-url: ${BASE_RUL}
+  connect-timeout-ms: 3000
+  read-timeout-ms: 8000

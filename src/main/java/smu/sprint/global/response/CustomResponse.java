@@ -36,6 +36,12 @@ public class CustomResponse<T> {
         return new CustomResponse<>(true, String.valueOf(status.value()), SUCCESS_MESSAGE, result);
     }
 
+    // 성공 응답
+    // 커스텀 메시지를 받아 Success 응답을 반환 (예: 캐시된 결과 등 상황별 안내 문구가 필요한 경우)
+    public static <T>CustomResponse<T> onSuccess(T result, String message) {
+        return new CustomResponse<>(true, String.valueOf(HttpStatus.OK.value()), message, result);
+    }
+
     // 실패 응답 (데이터 포함)
     // 직접 사용되기 보다는 Exception Handler에서 사용
     public static <T>CustomResponse<T> onFailure(String code, String message, T result) {
