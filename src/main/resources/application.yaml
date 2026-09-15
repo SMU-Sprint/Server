@@ -37,7 +37,7 @@ jwt:
 gemini:
   api-key: ${GEMINI_API_KEY}
   model: ${GEMINI_MODEL}
-  base-url: ${BASE_RUL}
+  base-url: ${BASE_URL}
   connect-timeout-ms: 3000
   read-timeout-ms: 8000
 
