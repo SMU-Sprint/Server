@@ -40,3 +40,7 @@ gemini:
   base-url: ${BASE_RUL}
   connect-timeout-ms: 3000
   read-timeout-ms: 8000
+
+kakao:
+  api-key: ${KAKAO_API_KEY}
+  base-url: https://dapi.kakao.com
