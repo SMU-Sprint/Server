@@ -23,6 +23,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import smu.sprint.domain.record.dto.ExerciseHeatmapResponse;
 import smu.sprint.domain.record.dto.ExerciseRecordCreateRequest;
 import smu.sprint.domain.record.dto.ExerciseRecordCreateResponse;
+import smu.sprint.domain.record.dto.ExerciseRecordDailyResponse;
 import smu.sprint.domain.record.service.ExerciseRecordService;
 import smu.sprint.global.code.GeneralErrorCode;
 import smu.sprint.global.response.CustomResponse;
@@ -81,7 +82,28 @@ public class ExerciseRecordController {
         return CustomResponse.onSuccess(response);
     }
 
-    // endDate=abc 처럼 파싱 자체가 불가능한 경우, Spring이 컨트롤러 메서드 진입 전에 던지는 예외.
+    @Operation(
+            summary = "특정 일자 운동 상세 조회",
+            description = "로그인된 상태(유효한 AccessToken)에서만 호출 가능합니다. " +
+                    "잔디에서 특정 날짜를 클릭했을 때 그 날 수행한 운동 목록(이름, 시간)과 총 운동 시간을 반환합니다. " +
+                    "기록이 없는 날짜도 200과 빈 배열(총 시간 0)을 반환합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "상세 조회 성공 (기록 없음 포함)"),
+            @ApiResponse(responseCode = "400", description = "date 누락 또는 형식이 올바르지 않음"),
+            @ApiResponse(responseCode = "401", description = "AccessToken이 없거나 유효하지 않음/만료됨")
+    })
+    @GetMapping("/daily")
+    public CustomResponse<ExerciseRecordDailyResponse> getDailyDetail(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @RequestParam
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate date) {
+        ExerciseRecordDailyResponse response = exerciseRecordService.getDailyDetail(customUserDetails, date);
+        return CustomResponse.onSuccess(response);
+    }
+
+    // endDate=abc, date=abc 처럼 파싱 자체가 불가능한 경우, Spring이 컨트롤러 메서드 진입 전에 던지는 예외.
     // 전역 GlobalExceptionHandler에는 해당 예외 처리기가 없어 그대로 두면 500으로 새므로, 이 컨트롤러 범위에서만 400으로 매핑한다.
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     protected ResponseEntity<CustomResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {

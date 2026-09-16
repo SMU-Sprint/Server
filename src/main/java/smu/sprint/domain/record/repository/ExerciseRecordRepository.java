@@ -16,4 +16,6 @@ public interface ExerciseRecordRepository extends JpaRepository<ExerciseRecord, 
     List<DailyExerciseCountProjection> countByMemberIdAndExerciseDateBetween(
             @Param("memberId") Long memberId, @Param("start") LocalDate start, @Param("end") LocalDate end);
 
+    List<ExerciseRecord> findByMemberIdAndExerciseDateOrderByCreatedAtAsc(Long memberId, LocalDate exerciseDate);
+
 }

@@ -9,6 +9,7 @@ import smu.sprint.domain.record.dto.ExerciseHeatmapDayResponse;
 import smu.sprint.domain.record.dto.ExerciseHeatmapResponse;
 import smu.sprint.domain.record.dto.ExerciseRecordCreateRequest;
 import smu.sprint.domain.record.dto.ExerciseRecordCreateResponse;
+import smu.sprint.domain.record.dto.ExerciseRecordDailyResponse;
 import smu.sprint.domain.record.entity.ExerciseRecord;
 import smu.sprint.domain.record.repository.DailyExerciseCountProjection;
 import smu.sprint.domain.record.repository.ExerciseRecordRepository;
@@ -78,6 +79,17 @@ public class ExerciseRecordService {
         if (count == 2) return 2;
         if (count <= 4) return 3;
         return 4;
+    }
+
+    @Transactional(readOnly = true)
+    public ExerciseRecordDailyResponse getDailyDetail(CustomUserDetails customUserDetails, LocalDate date) {
+        Member member = memberRepository.findByEmail(customUserDetails.getUsername())
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        List<ExerciseRecord> records = exerciseRecordRepository
+                .findByMemberIdAndExerciseDateOrderByCreatedAtAsc(member.getMember_id(), date);
+
+        return ExerciseRecordDailyResponse.of(date, records);
     }
 
 }
