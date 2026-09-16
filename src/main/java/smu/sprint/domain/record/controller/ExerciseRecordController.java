@@ -7,31 +7,25 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import smu.sprint.domain.record.dto.ExerciseHeatmapResponse;
 import smu.sprint.domain.record.dto.ExerciseRecordCreateRequest;
 import smu.sprint.domain.record.dto.ExerciseRecordCreateResponse;
 import smu.sprint.domain.record.dto.ExerciseRecordDailyResponse;
 import smu.sprint.domain.record.service.ExerciseRecordService;
-import smu.sprint.global.code.GeneralErrorCode;
 import smu.sprint.global.response.CustomResponse;
 import smu.sprint.global.security.auth.CustomUserDetails;
 
 import java.time.LocalDate;
 
-@Slf4j
 @Tag(name = "ExerciseRecord", description = "운동 기록 관련 API")
 @RestController
 @RequiredArgsConstructor
@@ -101,15 +95,6 @@ public class ExerciseRecordController {
             LocalDate date) {
         ExerciseRecordDailyResponse response = exerciseRecordService.getDailyDetail(customUserDetails, date);
         return CustomResponse.onSuccess(response);
-    }
-
-    // endDate=abc, date=abc 처럼 파싱 자체가 불가능한 경우, Spring이 컨트롤러 메서드 진입 전에 던지는 예외.
-    // 전역 GlobalExceptionHandler에는 해당 예외 처리기가 없어 그대로 두면 500으로 새므로, 이 컨트롤러 범위에서만 400으로 매핑한다.
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    protected ResponseEntity<CustomResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        log.warn("[ MethodArgumentTypeMismatchException ]: '{}' 파라미터 형식이 올바르지 않습니다.", ex.getName());
-        return ResponseEntity.status(GeneralErrorCode.BAD_REQUEST_400.getHttpStatus())
-                .body(CustomResponse.onFailure(GeneralErrorCode.BAD_REQUEST_400.getCode(), GeneralErrorCode.BAD_REQUEST_400.getMessage()));
     }
 
 }

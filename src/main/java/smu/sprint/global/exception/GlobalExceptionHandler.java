@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import smu.sprint.global.code.BaseErrorCode;
 import smu.sprint.global.code.GeneralErrorCode;
 import smu.sprint.global.response.CustomResponse;
@@ -54,6 +55,14 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<@NonNull CustomResponse<Void>> handleMissingServletRequestParameterException(
             MissingServletRequestParameterException ex) {
         log.warn("[ MissingServletRequestParameterException ]: '{}' 파라미터가 누락되었습니다.", ex.getParameterName());
+        return buildErrorResponse(GeneralErrorCode.BAD_REQUEST_400);
+    }
+
+    // 요청 파라미터(@RequestParam 등)의 타입이 맞지 않을 때(예: LocalDate 파라미터에 "abc") 발생하는 예외 처리
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    protected ResponseEntity<@NonNull CustomResponse<Void>> handleMethodArgumentTypeMismatchException(
+            MethodArgumentTypeMismatchException ex) {
+        log.warn("[ MethodArgumentTypeMismatchException ]: '{}' 파라미터 형식이 올바르지 않습니다.", ex.getName());
         return buildErrorResponse(GeneralErrorCode.BAD_REQUEST_400);
     }
 
