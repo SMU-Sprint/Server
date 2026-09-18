@@ -1,12 +1,7 @@
 package smu.sprint.domain.survey.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import smu.sprint.domain.survey.entity.ConstraintType;
-import smu.sprint.domain.survey.entity.ExercisePurpose;
-import smu.sprint.domain.survey.entity.ExerciseSpot;
-import smu.sprint.domain.survey.entity.OccupationType;
-import smu.sprint.domain.survey.entity.Survey;
-import smu.sprint.domain.survey.entity.SurveyConstraint;
+import smu.sprint.domain.survey.entity.*;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
