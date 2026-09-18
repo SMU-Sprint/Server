@@ -1,0 +1,35 @@
+name: Infra Template
+description: 인프라 및 배포 환경 구축/변경 템플릿
+title: "🔧 [Infra]: "
+labels: ["🔧 infra"]
+
+body:
+
+  - type: dropdown
+    id: infra-type
+    attributes:
+      label: "✅ 인프라 종류"
+      description: "작업할 인프라의 종류를 선택하세요."
+      options:
+        - "Docker"
+        - "CI/CD"
+        - "서버/배포"
+        - "데이터베이스"
+        - "Nginx"
+        - "HTTPS/도메인"
+        - "기타"
+    validations:
+      required: true
+
+  - type: textarea
+    id: infra-detail
+    attributes:
+      label: "👀 자세한 내용 (Optional)"
+      description: "구축하거나 변경할 인프라 작업에 대한 자세한 설명을 적어주세요."
+      placeholder: |
+        ex)
+        - Spring Boot 애플리케이션 Dockerfile 작성
+        - Docker Hub에 애플리케이션 이미지 업로드
+        - EC2에서 Docker 이미지를 이용해 서버 실행
+    validations:
+      required: false
