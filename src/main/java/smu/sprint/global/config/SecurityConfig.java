@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.configurers.HttpBasicC
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 import smu.sprint.global.security.auth.CustomUserDetailsService;
 import smu.sprint.global.security.filter.JwtAuthenticationEntryPoint;
 import smu.sprint.global.security.filter.JwtAuthorizationFilter;
@@ -40,8 +41,11 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) {
+    public SecurityFilterChain filterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) {
         http
+                .cors(cors ->
+                        cors.configurationSource(corsConfigurationSource)
+                )
                 .authorizeHttpRequests(request ->
                         request.requestMatchers(allowUrl).permitAll().anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthorizationFilter(jwtUtil, customUserDetailsService), UsernamePasswordAuthenticationFilter.class)
