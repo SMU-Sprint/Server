@@ -1,6 +1,7 @@
 package smu.sprint.domain.member.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import smu.sprint.global.security.jwt.JwtDTO;
 import smu.sprint.global.security.jwt.JwtUtil;
 import smu.sprint.global.security.jwt.TokenRepository;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberService {
@@ -48,6 +50,7 @@ public class MemberService {
                 jwtUtil.createJwtRefreshToken(customUserDetails)
         );
 
+        log.info("[ MemberService ]: 회원가입 완료 - email={}", member.getEmail());
         return new MemberSignUpResponse(member.getEmail(), token);
     }
 
@@ -69,6 +72,7 @@ public class MemberService {
 
         member.changePassword(passwordEncoder.encode(request.newPassword()));
         // 로그인 상태는 유지하므로 저장된 RefreshToken은 그대로 둔다.
+        log.info("[ MemberService ]: 비밀번호 변경 완료 - email={}", email);
     }
 
     @Transactional(readOnly = true)
@@ -86,6 +90,7 @@ public class MemberService {
 
         member.updateInfo(request.name(), request.height(), request.weight(), request.age(), request.gender());
 
+        log.info("[ MemberService ]: 회원 정보 변경 완료 - email={}", member.getEmail());
         return MemberInfoResponse.from(member);
     }
 
@@ -96,6 +101,7 @@ public class MemberService {
         // email을 변형하기 전에 먼저 조회/삭제해야 원래 email로 저장된 Token을 정확히 찾을 수 있다.
         tokenRepository.findByMember(member).ifPresent(tokenRepository::delete);
         member.withdraw();
+        log.info("[ MemberService ]: 회원 탈퇴 완료 - email={}", customUserDetails.getUsername());
     }
 
 }
