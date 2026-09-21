@@ -1,7 +1,7 @@
 name: Feature Template
 description: 기능 추가 템플릿
 title: "✨ [Feat]: "
-labels: ["✨ feature"]
+labels: ["✨ Feature"]
 
 body:
   - type: dropdown

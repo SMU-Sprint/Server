@@ -1,7 +1,7 @@
 name: Infra Template
 description: 인프라 및 배포 환경 구축/변경 템플릿
 title: "🔧 [Infra]: "
-labels: ["🔧 infra"]
+labels: ["🔧 Infra"]
 
 body:
 
