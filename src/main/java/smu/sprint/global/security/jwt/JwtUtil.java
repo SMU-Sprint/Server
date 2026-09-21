@@ -162,7 +162,6 @@ public class JwtUtil {
                     .build()
                     .parseSignedClaims(token);
         } catch (ExpiredJwtException e) {
-            log.warn("[ JwtUtil ]: 만료된 JWT 토큰입니다.");
             throw new ExpiredJwtException(null, null, "만료된 JWT 토큰입니다.");
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {
             throw new SecurityException("잘못된 토큰입니다.");
