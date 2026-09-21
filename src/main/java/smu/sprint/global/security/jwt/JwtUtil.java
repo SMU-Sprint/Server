@@ -16,7 +16,6 @@ import smu.sprint.domain.member.repository.MemberRepository;
 import smu.sprint.global.code.MemberErrorCode;
 import smu.sprint.global.exception.MemberException;
 import smu.sprint.global.security.auth.CustomUserDetails;
-import smu.sprint.global.security.auth.Roles;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
