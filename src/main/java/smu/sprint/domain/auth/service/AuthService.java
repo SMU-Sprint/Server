@@ -39,7 +39,9 @@ public class AuthService {
             throw new AuthException(AuthErrorCode.LOGIN_FAILED);
         }
 
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        if (!(authentication.getPrincipal() instanceof CustomUserDetails customUserDetails)) {
+            throw new AuthException(AuthErrorCode.LOGIN_FAILED);
+        }
         JwtDTO token = new JwtDTO(
                 jwtUtil.createJwtAccessToken(customUserDetails),
                 jwtUtil.createJwtRefreshToken(customUserDetails)
