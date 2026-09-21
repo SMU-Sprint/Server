@@ -51,15 +51,15 @@ public class JwtUtil {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getSubject();
     }
 
-    public Roles getRoles(String token) throws SignatureException {
-        String roleStr = Jwts.parser()
-                .verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class);
-        try {
-            return Roles.valueOf(roleStr);
-        } catch (IllegalArgumentException | NullPointerException e) {
-            throw new SignatureException("유효하지 않은 Role값입니다.");
-        }
-    }
+//    public Roles getRoles(String token) throws SignatureException {
+//        String roleStr = Jwts.parser()
+//                .verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class);
+//        try {
+//            return Roles.valueOf(roleStr);
+//        } catch (IllegalArgumentException | NullPointerException e) {
+//            throw new SignatureException("유효하지 않은 Role값입니다.");
+//        }
+//    }
 
     public TokenType getTokenType(String token) throws SignatureException {
         String tokenType = Jwts.parser()
