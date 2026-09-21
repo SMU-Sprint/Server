@@ -146,18 +146,14 @@ public class JwtUtil {
     }
 
     public String resolveAccessToken(HttpServletRequest request) {
-        log.info("[ JwtUtil ]: 헤더에서 토큰을 추출합니다.");
         String tokenFromHeader = request.getHeader("Authorization");
         if (tokenFromHeader == null || !tokenFromHeader.startsWith("Bearer ")) {
-            log.warn("[ JwtUtil ]: 헤더에 토큰이 존재하지 않습니다.");
             return null;
         }
-        log.info("[ JwtUtil ]: 헤더에 토큰이 존재합니다.");
         return tokenFromHeader.split(" ")[1];
     }
 
     public void validateToken(String token) {
-        log.info("[ JwtUtil ]: 토큰의 유효성을 검증합니다.");
         try {
             long seconds = 3 * 60;
             Jwts.parser()
