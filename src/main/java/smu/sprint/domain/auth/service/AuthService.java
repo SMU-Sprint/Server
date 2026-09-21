@@ -2,6 +2,7 @@ package smu.sprint.domain.auth.service;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -18,6 +19,7 @@ import smu.sprint.global.security.jwt.JwtUtil;
 
 import java.security.SignatureException;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -33,15 +35,19 @@ public class AuthService {
             );
         } catch (AuthenticationException e) {
             // 이메일 미존재와 비밀번호 불일치를 구분하지 않고 동일하게 응답 (계정 열거 공격 방지)
+            log.warn("[ AuthService ]: 로그인 실패 - email={}", request.email());
             throw new AuthException(AuthErrorCode.LOGIN_FAILED);
         }
 
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        if (!(authentication.getPrincipal() instanceof CustomUserDetails customUserDetails)) {
+            throw new AuthException(AuthErrorCode.LOGIN_FAILED);
+        }
         JwtDTO token = new JwtDTO(
                 jwtUtil.createJwtAccessToken(customUserDetails),
                 jwtUtil.createJwtRefreshToken(customUserDetails)
         );
 
+        log.info("[ AuthService ]: 로그인 성공 - email={}", customUserDetails.getUsername());
         return new LoginResponse(customUserDetails.getUsername(), token);
     }
 
@@ -55,6 +61,7 @@ public class AuthService {
 
     public void logout(CustomUserDetails customUserDetails) {
         jwtUtil.invalidateRefreshToken(customUserDetails);
+        log.info("[ AuthService ]: 로그아웃 - email={}", customUserDetails.getUsername());
     }
 
 }

@@ -1,6 +1,7 @@
 package smu.sprint.domain.recommendation.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import smu.sprint.domain.member.entity.Member;
 import smu.sprint.domain.member.repository.MemberRepository;
@@ -24,6 +25,7 @@ import smu.sprint.global.security.auth.CustomUserDetails;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RecommendationService {
@@ -47,6 +49,7 @@ public class RecommendationService {
         // 설문에 대해서 이미 운동 추천이 존재하는 경우
         List<RecommendedExercise> existing = recommendedExerciseRepository.findByIdSurveyIdOrderByIdRankAsc(survey.getSurveyId());
         if (!existing.isEmpty()) {
+            log.info("[ RecommendationService ]: 캐시된 추천 결과 반환 - email={}, surveyId={}", member.getEmail(), survey.getSurveyId());
             return new RecommendationResult(RecommendationResponse.from(survey.getSurveyId(), existing), true);
         }
 
@@ -72,6 +75,7 @@ public class RecommendationService {
         // 현재와 이전 설문 데이터를 하나로 묶어서 AI 프롬프트 생성에 필요한 컨텍스트로 전달
         RecommendationContext context = new RecommendationContext(member, survey, constraints, previousSurvey, previousConstraints, previousRecommendations);
 
+        log.info("[ RecommendationService ]: AI 추천 생성 요청 - email={}, surveyId={}", member.getEmail(), survey.getSurveyId());
         GeminiRecommendationResult result = geminiClient.generateRecommendations(context);
 
         boolean hasPrevious = context.hasPreviousContext();
@@ -89,6 +93,7 @@ public class RecommendationService {
 
         List<RecommendedExercise> saved = recommendedExerciseRepository.saveAll(toSave);
 
+        log.info("[ RecommendationService ]: AI 추천 생성 완료 - email={}, surveyId={}", member.getEmail(), survey.getSurveyId());
         return new RecommendationResult(RecommendationResponse.from(survey.getSurveyId(), saved), false);
     }
 

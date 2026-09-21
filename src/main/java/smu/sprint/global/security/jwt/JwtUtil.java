@@ -16,7 +16,6 @@ import smu.sprint.domain.member.repository.MemberRepository;
 import smu.sprint.global.code.MemberErrorCode;
 import smu.sprint.global.exception.MemberException;
 import smu.sprint.global.security.auth.CustomUserDetails;
-import smu.sprint.global.security.auth.Roles;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -51,15 +50,15 @@ public class JwtUtil {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getSubject();
     }
 
-    public Roles getRoles(String token) throws SignatureException {
-        String roleStr = Jwts.parser()
-                .verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class);
-        try {
-            return Roles.valueOf(roleStr);
-        } catch (IllegalArgumentException | NullPointerException e) {
-            throw new SignatureException("유효하지 않은 Role값입니다.");
-        }
-    }
+//    public Roles getRoles(String token) throws SignatureException {
+//        String roleStr = Jwts.parser()
+//                .verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class);
+//        try {
+//            return Roles.valueOf(roleStr);
+//        } catch (IllegalArgumentException | NullPointerException e) {
+//            throw new SignatureException("유효하지 않은 Role값입니다.");
+//        }
+//    }
 
     public TokenType getTokenType(String token) throws SignatureException {
         String tokenType = Jwts.parser()
@@ -146,18 +145,14 @@ public class JwtUtil {
     }
 
     public String resolveAccessToken(HttpServletRequest request) {
-        log.info("[ JwtUtil ]: 헤더에서 토큰을 추출합니다.");
         String tokenFromHeader = request.getHeader("Authorization");
         if (tokenFromHeader == null || !tokenFromHeader.startsWith("Bearer ")) {
-            log.warn("[ JwtUtil ]: 헤더에 토큰이 존재하지 않습니다.");
             return null;
         }
-        log.info("[ JwtUtil ]: 헤더에 토큰이 존재합니다.");
         return tokenFromHeader.split(" ")[1];
     }
 
     public void validateToken(String token) {
-        log.info("[ JwtUtil ]: 토큰의 유효성을 검증합니다.");
         try {
             long seconds = 3 * 60;
             Jwts.parser()
@@ -166,7 +161,6 @@ public class JwtUtil {
                     .build()
                     .parseSignedClaims(token);
         } catch (ExpiredJwtException e) {
-            log.warn("[ JwtUtil ]: 만료된 JWT 토큰입니다.");
             throw new ExpiredJwtException(null, null, "만료된 JWT 토큰입니다.");
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {
             throw new SecurityException("잘못된 토큰입니다.");

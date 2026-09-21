@@ -43,17 +43,13 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        log.info("[ JwtAuthorizationFilter ]: 인가 필터 작동");
-
         try {
             String accessToken = jwtUtil.resolveAccessToken(request);
             if (accessToken == null) {
-                log.info("[ JwtAuthorizationFilter ]: AccessToken이 존재하지 않습니다. 필터를 건너뜁니다.");
                 filterChain.doFilter(request, response);
                 return;
             }
             authenticateAccessToken(accessToken);
-            log.info("[ JwtAuthorizationFilter ]: 다음 필터로 넘어갑니다.");
             filterChain.doFilter(request, response);
 
         } catch (ExpiredJwtException e) {
@@ -84,9 +80,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     }
 
     private void authenticateAccessToken(String accessToken) throws SignatureException {
-        log.info("[ JwtAuthorizationFilter ]: 토큰으로 인가 과정을 시작합니다.");
         jwtUtil.validateToken(accessToken);
-        log.info("[ JwtAuthorizationFilter ]: AccessToken 유효성 검증 성공");
         if (jwtUtil.getTokenType(accessToken) != TokenType.ACCESS) {
             throw new SignatureException("AccessToken이 아닙니다.");
         }
@@ -98,7 +92,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 customUserDetails.getAuthorities()
         );
         SecurityContextHolder.getContext().setAuthentication(authToken);
-        log.info("[ JwtAuthorizationFilter ]: 인증 객체 저장 완료");
     }
 
 }
