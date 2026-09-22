@@ -112,6 +112,8 @@ public class JwtUtil {
     }
 
     public JwtDTO reissueToken(String refreshToken) throws SignatureException {
+가        // validateToken을 먼저 거쳐야 위조/손상된 토큰이 getTokenType의 무방비 파싱 구간에서 처리되지 않은 예외로 터지지 않는다.
+        validateToken(refreshToken);
         if (getTokenType(refreshToken) != TokenType.REFRESH) {
             throw new SignatureException("RefreshToken이 아닙니다.");
         }
