@@ -5,7 +5,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SecurityException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -152,7 +151,7 @@ public class JwtUtil {
         return tokenFromHeader.split(" ")[1];
     }
 
-    public void validateToken(String token) {
+    public void validateToken(String token) throws SignatureException {
         try {
             long seconds = 3 * 60;
             Jwts.parser()
@@ -163,7 +162,8 @@ public class JwtUtil {
         } catch (ExpiredJwtException e) {
             throw new ExpiredJwtException(null, null, "만료된 JWT 토큰입니다.");
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {
-            throw new SecurityException("잘못된 토큰입니다.");
+            // JwtAuthorizationFilter/AuthService가 catch하는 타입(java.security.SignatureException)과 맞춰야 하므로 io.jsonwebtoken 쪽 예외로 던지지 않는다.
+            throw new SignatureException("잘못된 토큰입니다.", e);
         }
     }
 }
