@@ -79,7 +79,7 @@ public class ExerciseRecordController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "상세 조회 성공 (기록 없음 포함)"),
-            @ApiResponse(responseCode = "400", description = "date 누락 또는 형식이 올바르지 않음"),
+            @ApiResponse(responseCode = "400", description = "date 누락, 형식이 올바르지 않거나 미래 날짜임"),
             @ApiResponse(responseCode = "401", description = "AccessToken이 없거나 유효하지 않음/만료됨")
     })
     @GetMapping("/daily")
@@ -87,6 +87,7 @@ public class ExerciseRecordController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            @PastOrPresent(message = "미래 날짜는 조회할 수 없습니다.")
             LocalDate date) {
         ExerciseRecordDailyResponse response = exerciseRecordService.getDailyDetail(customUserDetails, date);
         return CustomResponse.onSuccess(response);
