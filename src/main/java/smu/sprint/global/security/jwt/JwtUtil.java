@@ -5,7 +5,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SecurityException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -113,6 +112,8 @@ public class JwtUtil {
     }
 
     public JwtDTO reissueToken(String refreshToken) throws SignatureException {
+        // validateToken을 먼저 거쳐야 위조/손상된 토큰이 getTokenType의 무방비 파싱 구간에서 처리되지 않은 예외로 터지지 않는다.
+        validateToken(refreshToken);
         if (getTokenType(refreshToken) != TokenType.REFRESH) {
             throw new SignatureException("RefreshToken이 아닙니다.");
         }
@@ -149,10 +150,12 @@ public class JwtUtil {
         if (tokenFromHeader == null || !tokenFromHeader.startsWith("Bearer ")) {
             return null;
         }
-        return tokenFromHeader.split(" ")[1];
+        // "Bearer " 뒤에 토큰이 없는 경우(공백만 있는 경우) split(" ")[1]이 ArrayIndexOutOfBoundsException을 던지므로 substring으로 안전하게 추출
+        String token = tokenFromHeader.substring("Bearer ".length()).trim();
+        return token.isEmpty() ? null : token;
     }
 
-    public void validateToken(String token) {
+    public void validateToken(String token) throws SignatureException {
         try {
             long seconds = 3 * 60;
             Jwts.parser()
@@ -163,7 +166,8 @@ public class JwtUtil {
         } catch (ExpiredJwtException e) {
             throw new ExpiredJwtException(null, null, "만료된 JWT 토큰입니다.");
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {
-            throw new SecurityException("잘못된 토큰입니다.");
+            // JwtAuthorizationFilter/AuthService가 catch하는 타입(java.security.SignatureException)과 맞춰야 하므로 io.jsonwebtoken 쪽 예외로 던지지 않는다.
+            throw new SignatureException("잘못된 토큰입니다.", e);
         }
     }
 }
