@@ -8,16 +8,19 @@ public record MemberInfoUpdateRequest(
 
         @Schema(description = "이름", example = "홍길동")
         @NotBlank
+         @Size(max = 50)
         String name,
 
         @Schema(description = "신장(cm)", example = "170.5")
         @NotNull
         @Positive
+        @DecimalMax("250.0")
         Double height,
 
         @Schema(description = "몸무게(kg)", example = "65.0")
         @NotNull
         @Positive
+        @DecimalMax("300.0")
         Double weight,
 
         @Schema(description = "성별")
