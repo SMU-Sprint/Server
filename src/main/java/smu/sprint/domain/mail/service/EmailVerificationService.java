@@ -51,6 +51,14 @@ public class EmailVerificationService {
         issueCode(email);
     }
 
+    // 비로그인 상태에서 호출되므로, 회원가입 코드 발급과 반대로 이메일이 가입되어 있어야 발급 가능
+    @Transactional
+    public void issueFindPasswordCode(String email) {
+        memberRepository.findByEmail(email)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+        issueCode(email);
+    }
+
     private void issueCode(String email) {
         Optional<EmailVerification> existing = emailVerificationRepository.findById(email);
         existing.ifPresent(verification -> {
@@ -105,14 +113,23 @@ public class EmailVerificationService {
     }
 
     private void sendVerificationEmail(String to, String code) {
+        sendMail(to, "[Sprint] 이메일 인증 코드", "인증 코드: " + code + "\n10분 이내에 입력해주세요.");
+    }
+
+    public void sendTemporaryPassword(String to, String temporaryPassword) {
+        sendMail(to, "[Sprint] 임시 비밀번호 발급",
+                "임시 비밀번호: " + temporaryPassword + "\n로그인 후 반드시 비밀번호를 변경해주세요.");
+    }
+
+    private void sendMail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
-        message.setSubject("[Sprint] 이메일 인증 코드");
-        message.setText("인증 코드: " + code + "\n10분 이내에 입력해주세요.");
+        message.setSubject(subject);
+        message.setText(text);
         try {
             mailSender.send(message);
         } catch (MailException e) {
-            log.error("[ EmailVerificationService ]: 인증 메일 발송에 실패했습니다.", e);
+            log.error("[ EmailVerificationService ]: 메일 발송에 실패했습니다.", e);
             throw new EmailVerificationException(EmailVerificationErrorCode.MAIL_SEND_FAILED);
         }
     }

@@ -58,4 +58,21 @@ public class EmailVerificationController {
         return CustomResponse.onSuccess(null);
     }
 
+    @Operation(
+            summary = "비밀번호 찾기 이메일 인증 코드 발급",
+            description = "가입된 회원의 이메일로 인증 코드를 발송합니다. " +
+                    "코드는 10분간 유효하며, 재발급은 60초에 한 번만 가능합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "인증 코드 발송 성공"),
+            @ApiResponse(responseCode = "400", description = "요청 값 검증 실패"),
+            @ApiResponse(responseCode = "404", description = "가입되지 않은 이메일"),
+            @ApiResponse(responseCode = "429", description = "인증 코드 재요청이 너무 잦음")
+    })
+    @PostMapping("/verification/find-password")
+    public CustomResponse<Void> issueFindPasswordCode(@Valid @RequestBody EmailVerificationRequest request) {
+        emailVerificationService.issueFindPasswordCode(request.email());
+        return CustomResponse.onSuccess(null);
+    }
+
 }
