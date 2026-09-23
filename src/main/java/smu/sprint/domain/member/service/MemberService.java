@@ -17,16 +17,30 @@ import smu.sprint.global.security.jwt.JwtDTO;
 import smu.sprint.global.security.jwt.JwtUtil;
 import smu.sprint.global.security.jwt.TokenRepository;
 
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberService {
+
+    // 사람이 눈으로 옮겨 적기 쉬운 문자만으로 임시 비밀번호를 구성 (0/O, 1/l/I 등 혼동되는 문자 제외)
+    private static final int TEMP_PASSWORD_LENGTH = 12;
+    private static final String LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz";
+    private static final String DIGITS = "23456789";
+    private static final String SPECIALS = "!@#$%^&*";
+    private static final String TEMP_PASSWORD_POOL = LETTERS + DIGITS + SPECIALS;
 
     private final MemberRepository memberRepository;
     private final TokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final EmailVerificationService emailVerificationService;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     @Transactional
     public MemberSignUpResponse signUp(MemberSignUpRequest request) {
@@ -73,6 +87,37 @@ public class MemberService {
         member.changePassword(passwordEncoder.encode(request.newPassword()));
         // 로그인 상태는 유지하므로 저장된 RefreshToken은 그대로 둔다.
         log.info("[ MemberService ]: 비밀번호 변경 완료 - email={}", email);
+    }
+
+    @Transactional
+    public void resetPassword(FindPasswordRequest request) {
+        emailVerificationService.verifyCode(request.email(), request.code());
+
+        Member member = memberRepository.findByEmail(request.email())
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        String temporaryPassword = generateTemporaryPassword();
+        member.changePassword(passwordEncoder.encode(temporaryPassword));
+        // 임시 비밀번호 발급 시 탈취된 세션이 남아있지 않도록 기존 RefreshToken을 폐기 (재로그인 필요)
+        tokenRepository.findByMember(member).ifPresent(tokenRepository::delete);
+
+        emailVerificationService.sendTemporaryPassword(member.getEmail(), temporaryPassword);
+        log.info("[ MemberService ]: 임시 비밀번호 발급 완료 - email={}", member.getEmail());
+    }
+
+    private String generateTemporaryPassword() {
+        List<Character> chars = new ArrayList<>(List.of(
+                pickRandomChar(LETTERS), pickRandomChar(DIGITS), pickRandomChar(SPECIALS)
+        ));
+        for (int i = chars.size(); i < TEMP_PASSWORD_LENGTH; i++) {
+            chars.add(pickRandomChar(TEMP_PASSWORD_POOL));
+        }
+        Collections.shuffle(chars, secureRandom);
+        return chars.stream().map(String::valueOf).collect(Collectors.joining());
+    }
+
+    private char pickRandomChar(String source) {
+        return source.charAt(secureRandom.nextInt(source.length()));
     }
 
     @Transactional(readOnly = true)

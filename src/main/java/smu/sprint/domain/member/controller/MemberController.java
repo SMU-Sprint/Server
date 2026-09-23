@@ -59,6 +59,22 @@ public class MemberController {
     }
 
     @Operation(
+            summary = "비밀번호 찾기 (임시 비밀번호 발급)",
+            description = "사전에 /api/v1/mail/verification/find-password로 발급받은 인증 코드가 필요합니다. " +
+                    "인증에 성공하면 서버가 임시 비밀번호를 생성해 이메일로 전송하고, 기존 로그인 세션(RefreshToken)은 폐기됩니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "임시 비밀번호 발급 성공"),
+            @ApiResponse(responseCode = "400", description = "요청 값 검증 실패 / 인증 코드 만료 / 인증 코드 불일치"),
+            @ApiResponse(responseCode = "404", description = "발급된 인증 코드가 없음 / 회원을 찾을 수 없음")
+    })
+    @PostMapping("/password/reset")
+    public CustomResponse<Void> resetPassword(@Valid @RequestBody FindPasswordRequest request) {
+        memberService.resetPassword(request);
+        return CustomResponse.onSuccess(null);
+    }
+
+    @Operation(
             summary = "회원 정보 조회",
             description = "로그인된 상태(유효한 AccessToken)에서만 호출 가능합니다. 이메일, 이름, 신장, 몸무게, 나이, 성별을 조회합니다."
     )
