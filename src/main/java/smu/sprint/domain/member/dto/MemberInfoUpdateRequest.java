@@ -6,10 +6,6 @@ import smu.sprint.domain.member.entity.Gender;
 
 public record MemberInfoUpdateRequest(
 
-        @Schema(description = "이메일로 전송된 인증 코드", example = "123456")
-        @NotBlank
-        String code,
-
         @Schema(description = "이름", example = "홍길동")
         @NotBlank
          @Size(max = 50)

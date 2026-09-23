@@ -85,10 +85,7 @@ public class MemberService {
 
     @Transactional
     public MemberInfoResponse updateMemberInfo(CustomUserDetails customUserDetails, MemberInfoUpdateRequest request) {
-        String email = customUserDetails.getUsername();
-        emailVerificationService.verifyCode(email, request.code());
-
-        Member member = memberRepository.findByEmail(email)
+        Member member = memberRepository.findByEmail(customUserDetails.getUsername())
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         member.updateInfo(request.name(), request.height(), request.weight(), request.age(), request.gender());
