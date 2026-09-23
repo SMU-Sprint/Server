@@ -32,10 +32,12 @@ public class SecurityConfig {
             "/swagger-ui.html",
             "/v3/api-docs/**",
             "/api/v1/members", // 회원가입
+            "/api/v1/members/password/reset", // 비밀번호 찾기 (임시 비밀번호 발급)
             "/api/v1/mail/verification", // 이메일 인증 코드 발급
+            "/api/v1/mail/verification/find-password", // 비밀번호 찾기 이메일 인증 코드 발급
             "/api/v1/auth/login", // 로그인
             "/api/v1/auth/reissue" // 토큰 재발급
-            // 로그아웃은 로그인된 상태(AccessToken 보유)에서만 호출 가능해야 하므로 permitAll에 포함하지 않음
+            // 로그아웃, 비밀번호 변경(password-change 코드 발급 포함)은 로그인된 상태(AccessToken 보유)에서만 호출 가능해야 하므로 permitAll에 포함하지 않음
     };
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
