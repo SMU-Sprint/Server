@@ -51,6 +51,12 @@ public class EmailVerificationService {
         issueCode(email);
     }
 
+    // 로그인된 사용자 본인의 이메일로 발급 — JwtAuthorizationFilter가 이미 회원 존재를 확인했으므로 별도 존재 체크 불필요
+    @Transactional
+    public void issueMemberInfoChangeCode(String email) {
+        issueCode(email);
+    }
+
     private void issueCode(String email) {
         Optional<EmailVerification> existing = emailVerificationRepository.findById(email);
         existing.ifPresent(verification -> {

@@ -75,13 +75,14 @@ public class MemberController {
     @Operation(
             summary = "회원 정보 변경",
             description = "로그인된 상태(유효한 AccessToken)에서만 호출 가능합니다. " +
+                    "사전에 /api/v1/mail/verification/member-info-change로 발급받은 인증 코드가 필요합니다. " +
                     "이름, 신장, 몸무게, 성별, 나이를 변경합니다."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "회원 정보 변경 성공"),
-            @ApiResponse(responseCode = "400", description = "요청 값 검증 실패"),
+            @ApiResponse(responseCode = "400", description = "요청 값 검증 실패 / 인증 코드 만료 / 인증 코드 불일치"),
             @ApiResponse(responseCode = "401", description = "AccessToken이 없거나 유효하지 않음/만료됨"),
-            @ApiResponse(responseCode = "404", description = "AccessToken에 해당하는 회원을 찾을 수 없음")
+            @ApiResponse(responseCode = "404", description = "발급된 인증 코드가 없음 / AccessToken에 해당하는 회원을 찾을 수 없음")
     })
     @PatchMapping("/me")
     public CustomResponse<MemberInfoResponse> updateMemberInfo(
