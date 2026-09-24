@@ -13,6 +13,8 @@ public interface FacilityNearbyProjection {
 
     String getType();
 
+    String getExerciseName();
+
     String getAddress();
 
     Double getLatitude();

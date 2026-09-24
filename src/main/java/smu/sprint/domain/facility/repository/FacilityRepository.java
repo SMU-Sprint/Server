@@ -10,11 +10,15 @@ import java.util.List;
 public interface FacilityRepository extends JpaRepository<Facility, Long> {
 
     // Haversine 공식(ASIN/SQRT 방식)으로 직선 거리(km)를 계산해 반경 내 시설을 거리순으로 조회하기
+    // exerciseName은 시설 종목에 매핑된 운동명을 ', '로 이어 붙인 값이며, 매핑이 없으면 NULL이다.
     @Query(value = """
             SELECT
                 f.facility_id AS facilityId,
                 f.name AS name,
                 f.type AS type,
+                (SELECT GROUP_CONCAT(m.exercise_name ORDER BY m.id SEPARATOR ', ')
+                 FROM exercise_facility_mapping m
+                 WHERE m.facility_type = f.type) AS exerciseName,
                 f.address AS address,
                 f.latitude AS latitude,
                 f.longitude AS longitude,

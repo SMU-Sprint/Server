@@ -32,6 +32,7 @@ public class FacilityController {
             description = "로그인된 상태(유효한 AccessToken)에서만 호출 가능합니다. " +
                     "위도/경도를 기준으로 반경(radiusKm, 기본 3km, 최대 20km) 내 체육시설을 거리순으로 조회합니다. " +
                     "exerciseName을 지정하면 매핑된 시설 종류로 필터링하며, 매핑이 없거나 생략하면 필터 없이 전체를 반환합니다. " +
+                    "각 시설에는 해당 종목에 매핑된 운동명이 exerciseName(여러 개면 ', '구분해서 )으로 함께 내려주기, 매핑이 없으면 키가 생략됩니다. " +
                     "검색 결과가 없어도 200과 빈 배열을 반환합니다."
     )
     @ApiResponses({
