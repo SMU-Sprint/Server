@@ -31,6 +31,9 @@ public record FacilitySearchResponse(
             @Schema(description = "종목")
             String type,
 
+            @Schema(description = "종목에 매핑된 운동명 (여러 개면 ', '로 구분, 매핑이 없으면 응답에서 키가 생략됨)")
+            String exerciseName,
+
             @Schema(description = "주소")
             String address,
 
@@ -55,6 +58,7 @@ public record FacilitySearchResponse(
                     row.getFacilityId(),
                     row.getName(),
                     row.getType(),
+                    row.getExerciseName(),
                     row.getAddress(),
                     row.getLatitude(),
                     row.getLongitude(),
