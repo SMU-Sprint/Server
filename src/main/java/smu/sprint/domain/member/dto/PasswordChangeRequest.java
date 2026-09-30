@@ -6,9 +6,9 @@ import jakarta.validation.constraints.Pattern;
 
 public record PasswordChangeRequest(
 
-        @Schema(description = "이메일로 전송된 인증 코드", example = "123456")
+        @Schema(description = "이메일 인증 완료 후 발급받은 검증 토큰", example = "3f9a1c2e...")
         @NotBlank
-        String code,
+        String token,
 
         @Schema(description = "새 비밀번호 (영문, 숫자, 특수문자 모두 포함 8자 이상)", example = "abcd123!")
         @NotBlank

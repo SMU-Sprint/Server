@@ -21,9 +21,9 @@ public record MemberSignUpRequest(
         )
         String password,
 
-        @Schema(description = "이메일로 전송된 인증 코드", example = "123456")
+        @Schema(description = "이메일 인증 완료 후 발급받은 검증 토큰", example = "3f9a1c2e...")
         @NotBlank
-        String code
+        String token
 
 ) {
 }
