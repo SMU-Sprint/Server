@@ -23,14 +23,15 @@ public class MemberController {
 
     @Operation(
             summary = "회원가입",
-            description = "이메일/비밀번호/인증 코드로 회원가입을 진행합니다. " +
-                    "사전에 /api/v1/mail/verification으로 발급받은 인증 코드가 필요합니다. " +
+            description = "이메일/비밀번호/검증 토큰으로 회원가입을 진행합니다. " +
+                    "사전에 /api/v1/mail/verification으로 인증 코드를 발급받고, " +
+                    "/api/v1/mail/verification/confirm(purpose=SIGN_UP)으로 검증 토큰을 발급받아야 합니다. " +
                     "성공 시 즉시 로그인 처리되어 AccessToken/RefreshToken이 함께 발급됩니다."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "회원가입 성공"),
-            @ApiResponse(responseCode = "400", description = "요청 값 검증 실패 / 인증 코드가 만료됨 / 인증 코드 불일치"),
-            @ApiResponse(responseCode = "404", description = "발급된 인증 코드가 없음"),
+            @ApiResponse(responseCode = "400", description = "요청 값 검증 실패 / 검증 토큰이 만료됨 / 검증 토큰이 유효하지 않음"),
+            @ApiResponse(responseCode = "404", description = "발급된 검증 토큰이 없음"),
             @ApiResponse(responseCode = "409", description = "이미 가입된 이메일")
     })
     @PostMapping
@@ -41,15 +42,16 @@ public class MemberController {
     @Operation(
             summary = "비밀번호 변경",
             description = "로그인된 상태(유효한 AccessToken)에서만 호출 가능합니다. " +
-                    "사전에 /api/v1/mail/verification/password-change로 발급받은 인증 코드가 필요합니다. " +
+                    "사전에 /api/v1/mail/verification/password-change로 인증 코드를 발급받고, " +
+                    "/api/v1/mail/verification/confirm(purpose=PASSWORD_CHANGE)으로 검증 토큰을 발급받아야 합니다. " +
                     "변경 후에도 로그인 상태는 유지됩니다."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
             @ApiResponse(responseCode = "400", description = "요청 값 검증 실패 / 새 비밀번호 확인 불일치 / " +
-                    "인증 코드 만료 / 인증 코드 불일치 / 기존 비밀번호와 동일"),
+                    "검증 토큰 만료 / 검증 토큰이 유효하지 않음 / 기존 비밀번호와 동일"),
             @ApiResponse(responseCode = "401", description = "AccessToken이 없거나 유효하지 않음/만료됨"),
-            @ApiResponse(responseCode = "404", description = "발급된 인증 코드가 없음 / 회원을 찾을 수 없음")
+            @ApiResponse(responseCode = "404", description = "발급된 검증 토큰이 없음 / 회원을 찾을 수 없음")
     })
     @PatchMapping("/password")
     public CustomResponse<Void> changePassword(@AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -60,13 +62,14 @@ public class MemberController {
 
     @Operation(
             summary = "비밀번호 찾기 (임시 비밀번호 발급)",
-            description = "사전에 /api/v1/mail/verification/find-password로 발급받은 인증 코드가 필요합니다. " +
+            description = "사전에 /api/v1/mail/verification/find-password로 인증 코드를 발급받고, " +
+                    "/api/v1/mail/verification/confirm(purpose=FIND_PASSWORD)으로 검증 토큰을 발급받아야 합니다. " +
                     "인증에 성공하면 서버가 임시 비밀번호를 생성해 이메일로 전송하고, 기존 로그인 세션(RefreshToken)은 폐기됩니다."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "임시 비밀번호 발급 성공"),
-            @ApiResponse(responseCode = "400", description = "요청 값 검증 실패 / 인증 코드 만료 / 인증 코드 불일치"),
-            @ApiResponse(responseCode = "404", description = "발급된 인증 코드가 없음 / 회원을 찾을 수 없음")
+            @ApiResponse(responseCode = "400", description = "요청 값 검증 실패 / 검증 토큰 만료 / 검증 토큰이 유효하지 않음"),
+            @ApiResponse(responseCode = "404", description = "발급된 검증 토큰이 없음 / 회원을 찾을 수 없음")
     })
     @PostMapping("/password/reset")
     public CustomResponse<Void> resetPassword(@Valid @RequestBody FindPasswordRequest request) {

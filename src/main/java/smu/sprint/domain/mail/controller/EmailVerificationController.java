@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import smu.sprint.domain.mail.dto.EmailVerificationConfirmRequest;
+import smu.sprint.domain.mail.dto.EmailVerificationConfirmResponse;
 import smu.sprint.domain.mail.dto.EmailVerificationRequest;
 import smu.sprint.domain.mail.service.EmailVerificationService;
 import smu.sprint.global.response.CustomResponse;
@@ -73,6 +75,23 @@ public class EmailVerificationController {
     public CustomResponse<Void> issueFindPasswordCode(@Valid @RequestBody EmailVerificationRequest request) {
         emailVerificationService.issueFindPasswordCode(request.email());
         return CustomResponse.onSuccess(null);
+    }
+
+    @Operation(
+            summary = "이메일 인증 코드 검증",
+            description = "발급받은 인증 코드를 검증하고, 검증 토큰을 발급합니다. " +
+                    "발급받은 토큰은 코드를 발급받았던 것과 동일한 목적(purpose)의 API(회원가입 / 비밀번호 변경 / 비밀번호 찾기)에서만 사용할 수 있으며, " +
+                    "5분간 유효하고 1회 사용 후 만료됩니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "인증 코드 검증 성공, 검증 토큰 발급"),
+            @ApiResponse(responseCode = "400", description = "요청 값 검증 실패 / 인증 코드가 만료됨 / 인증 코드 불일치"),
+            @ApiResponse(responseCode = "404", description = "발급된 인증 코드가 없음")
+    })
+    @PostMapping("/verification/confirm")
+    public CustomResponse<EmailVerificationConfirmResponse> confirmCode(@Valid @RequestBody EmailVerificationConfirmRequest request) {
+        String token = emailVerificationService.confirmCode(request.email(), request.code(), request.purpose());
+        return CustomResponse.onSuccess(new EmailVerificationConfirmResponse(token));
     }
 
 }

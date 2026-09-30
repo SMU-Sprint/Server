@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import smu.sprint.domain.mail.entity.VerificationPurpose;
 import smu.sprint.domain.mail.service.EmailVerificationService;
 import smu.sprint.domain.member.dto.*;
 import smu.sprint.domain.member.entity.Member;
@@ -47,7 +48,7 @@ public class MemberService {
         if (memberRepository.findByEmail(request.email()).isPresent()) {
             throw new MemberException(MemberErrorCode.DUPLICATE_MEMBER);
         }
-        emailVerificationService.verifyCode(request.email(), request.code());
+        emailVerificationService.verifyToken(request.email(), request.token(), VerificationPurpose.SIGN_UP);
 
         Member member = Member.builder()
                 .email(request.email())
@@ -75,7 +76,7 @@ public class MemberService {
         }
 
         String email = customUserDetails.getUsername();
-        emailVerificationService.verifyCode(email, request.code());
+        emailVerificationService.verifyToken(email, request.token(), VerificationPurpose.PASSWORD_CHANGE);
 
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
@@ -91,7 +92,7 @@ public class MemberService {
 
     @Transactional
     public void resetPassword(FindPasswordRequest request) {
-        emailVerificationService.verifyCode(request.email(), request.code());
+        emailVerificationService.verifyToken(request.email(), request.token(), VerificationPurpose.FIND_PASSWORD);
 
         Member member = memberRepository.findByEmail(request.email())
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
