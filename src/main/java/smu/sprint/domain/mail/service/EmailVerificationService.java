@@ -10,7 +10,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import smu.sprint.domain.mail.dto.EmailVerificationRequest;
 import smu.sprint.domain.mail.entity.EmailVerification;
+import smu.sprint.domain.mail.entity.EmailVerificationToken;
+import smu.sprint.domain.mail.entity.VerificationPurpose;
 import smu.sprint.domain.mail.repository.EmailVerificationRepository;
+import smu.sprint.domain.mail.repository.EmailVerificationTokenRepository;
 import smu.sprint.domain.member.repository.MemberRepository;
 import smu.sprint.global.code.EmailVerificationErrorCode;
 import smu.sprint.global.code.MemberErrorCode;
@@ -20,6 +23,7 @@ import smu.sprint.global.exception.MemberException;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.Optional;
 
 @Slf4j
@@ -28,10 +32,13 @@ import java.util.Optional;
 public class EmailVerificationService {
 
     private static final Duration CODE_TTL = Duration.ofMinutes(10);
+    private static final Duration TOKEN_TTL = Duration.ofMinutes(5);
     private static final Duration REISSUE_COOLDOWN = Duration.ofSeconds(60);
     private static final int CODE_LENGTH = 6;
+    private static final int TOKEN_BYTE_LENGTH = 32;
 
     private final EmailVerificationRepository emailVerificationRepository;
+    private final EmailVerificationTokenRepository emailVerificationTokenRepository;
     private final MemberRepository memberRepository;
     private final JavaMailSender mailSender;
     private final SecureRandom secureRandom = new SecureRandom();
@@ -86,10 +93,23 @@ public class EmailVerificationService {
         sendVerificationEmail(email, code);
     }
 
-    // 회원가입(MemberService.signUp)의 트랜잭션 안에서 호출되더라도 코드 삭제만은 독립적으로 커밋되어야 하므로
-    // REQUIRES_NEW로 별도 트랜잭션을 열고, 불일치/만료로 던지는 예외 때문에 그 삭제 자체가 롤백되지 않도록 한다.
-    @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor = EmailVerificationException.class)
-    public void verifyCode(String email, String code) {
+    // 인증 코드를 검증하고, 실제 액션(회원가입/비밀번호 변경/비밀번호 찾기) API에서 사용할 단기 검증 토큰을 발급한다.
+    @Transactional
+    public String confirmCode(String email, String code, VerificationPurpose purpose) {
+        consumeCode(email, code);
+
+        String token = generateToken();
+        emailVerificationTokenRepository.save(EmailVerificationToken.builder()
+                .token(token)
+                .email(email)
+                .purpose(purpose)
+                .issuedAt(LocalDateTime.now())
+                .build());
+
+        return token;
+    }
+
+    private void consumeCode(String email, String code) {
         EmailVerification verification = emailVerificationRepository.findById(email)
                 .orElseThrow(() -> new EmailVerificationException(EmailVerificationErrorCode.VERIFICATION_CODE_NOT_FOUND));
 
@@ -106,10 +126,36 @@ public class EmailVerificationService {
         }
     }
 
+    // 회원가입/비밀번호 변경/비밀번호 찾기 API의 트랜잭션 안에서 호출되더라도 토큰 소모만은 독립적으로 커밋되어야 하므로
+    // REQUIRES_NEW로 별도 트랜잭션을 열고, 만료/불일치로 던지는 예외 때문에 그 삭제 자체가 롤백되지 않도록 한다.
+    @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor = EmailVerificationException.class)
+    public void verifyToken(String email, String token, VerificationPurpose purpose) {
+        EmailVerificationToken verificationToken = emailVerificationTokenRepository.findById(token)
+                .orElseThrow(() -> new EmailVerificationException(EmailVerificationErrorCode.VERIFICATION_TOKEN_NOT_FOUND));
+
+        boolean expired = verificationToken.isExpired(TOKEN_TTL);
+        boolean matched = verificationToken.getEmail().equals(email) && verificationToken.getPurpose() == purpose;
+        // 대조된 순간 결과와 무관하게 삭제 (동일 토큰 재사용 방지)
+        emailVerificationTokenRepository.delete(verificationToken);
+
+        if (expired) {
+            throw new EmailVerificationException(EmailVerificationErrorCode.VERIFICATION_TOKEN_EXPIRED);
+        }
+        if (!matched) {
+            throw new EmailVerificationException(EmailVerificationErrorCode.VERIFICATION_TOKEN_MISMATCH);
+        }
+    }
+
     private String generateCode() {
         int bound = (int) Math.pow(10, CODE_LENGTH);
         int code = secureRandom.nextInt(bound);
         return String.format("%0" + CODE_LENGTH + "d", code);
+    }
+
+    private String generateToken() {
+        byte[] bytes = new byte[TOKEN_BYTE_LENGTH];
+        secureRandom.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
     private void sendVerificationEmail(String to, String code) {
